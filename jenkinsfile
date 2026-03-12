@@ -11,14 +11,18 @@ pipeline {
         stage('terraform init') {
             steps {
                 echo 'Terraform init stage running'
-                sh 'cd /workspaces/devops_3tiers/realproject/3tier/env/dev && terraform init'
+                sh '''
+                cd realproject/3tier/env/dev && terraform init
+                '''
             }
         }
 
         stage('terraform plan') {
             steps {
                 echo 'Terraform plan stage running'
-                sh 'cd /workspaces/devops_3tiers/realproject/3tier/env/dev && terraform plan'
+                sh '''
+                cd realproject/3tier/env/dev && terraform plan
+                '''
             }
         }
     }
