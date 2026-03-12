@@ -1,11 +1,12 @@
 resource "aws_db_subnet_group" "database_mysql" {
-  name       = "${var.database_mysql}-subnet-group"
+  name       = "database_mysql"
   subnet_ids = var.db_subnet
 
   tags = {
-    Name = "database-mysql-primary"
+    Name = "database_mysql"
   }
 }
+
 
 resource "aws_db_instance" "database_mysql_primary" {
   identifier              = "database-mysql-primary"
@@ -23,7 +24,7 @@ resource "aws_db_instance" "database_mysql_primary" {
   storage_encrypted       = false 
 
   vpc_security_group_ids  = [var.database_security_group]
-  db_subnet_group_name    = aws_db_subnet_group.database_mysql.name
+  db_subnet_group_name    = aws_db_subnet_group.database_mysql.id
 
   publicly_accessible     = false
   multi_az                = true
@@ -34,17 +35,17 @@ resource "aws_db_instance" "database_mysql_primary" {
   performance_insights_enabled = false
 
   tags = {
-    Name = "${var.database_mysql}-primary"
+    Name = "database_mysql_primary"
   }
 }
 
 resource "aws_db_instance" "database_mysql_read_replica" {
-  identifier          = "database-mysql-primary-read-replica"
+# identifier          = "database-mysql-primary-read-replica"
 
-  engine              = "mysql"
+# engine              = "mysql"
   instance_class      = var.database_instance_class
 
-  replicate_source_db = aws_db_instance.database_mysql_primary.id
+  replicate_source_db = aws_db_instance.database_mysql_primary.arn
 
   publicly_accessible = false
   storage_encrypted   = false

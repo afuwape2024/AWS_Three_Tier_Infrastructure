@@ -1,12 +1,13 @@
 
 
 resource "aws_launch_template" "web_template" {
+  name_prefix   = "web-server"
   image_id      = var.image_id
   instance_type = var.instance_type
 
   network_interfaces {
-    associate_public_ip_address = false
-    security_groups             = [var.web_security_group, var.app_sg_id]
+    associate_public_ip_address = true
+    security_groups             = [var.web_security_group]
   }
 
   placement {
@@ -37,7 +38,7 @@ resource "aws_autoscaling_group" "web_scaling_group" {
   desired_capacity          = var.desired_capacity
   force_delete              = true
  #placement_group           = aws_placement_group.test.id
-  vpc_zone_identifier       = var.private_subnet_ids
+  vpc_zone_identifier       = var.web_subnet_ids
   target_group_arns         = [var.target_group_arn]
 
   launch_template {
