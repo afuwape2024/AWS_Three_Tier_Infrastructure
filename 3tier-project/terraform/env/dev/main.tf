@@ -44,14 +44,22 @@ module "network_acl" {
 }
 
 module "security_group" {
-  source = "../../modules/security-group-module"
-  vpc_id = module.vpc.new_vpc
+  source                    = "../../modules/security-group-module"
+  vpc_id                    = module.vpc.new_vpc
+  load_balancer_security_group = module.internal_load_balancer.internal_application_load_balancer_sg
 }
 
-module "load_balancer" {
-  source         = "../../modules/app-alb-module"
+module "web_load_balancer" {
+  source         = "../../modules/web-alb-module"
   vpc_id         = module.vpc.new_vpc
   web_subnet_ids = module.subnet.web_subnet
+}
+
+module "internal_load_balancer" {
+  source         = "../../modules/app-alb-module"
+  new_vpc        = module.vpc.new_vpc
+  app_subnet_ids = module.subnet.app_subnet
+  load_balancer_security_group = module.web_load_balancer.load_balancer_security_group
 }
 
 module "autoscaling" {
@@ -66,7 +74,7 @@ module "autoscaling" {
   web_subnet_cidr_block = local.web_subnet_cidr_block
   app_sg_id             = module.security_group.app_security_group
   private_subnet_ids    = module.subnet.app_subnet
-  target_group_arn      = module.load_balancer.web_target_group
+  target_group_arn      = module.web_load_balancer.web_target_group
 }
 
 module "database_mysql" {
@@ -82,10 +90,14 @@ module "tier_vpc_flow_logs" {
   vpc_flow_logs_iam_role_arn = module.iam_role_module.vpc_flow_logs_iam_role_arn
 }
 
-module "iam_role_module" {
-  source = "../../modules/iam_role-module"
+module "vpc_flow_iam_role-module" {
+  source = "../../modules/vpc_flow_iam_role-module"
 }
 
 module "cloudwatch_module" {
   source = "../../modules/cloudwatch-module"
+}
+
+module "system_manager_module" {
+  source = "../../modules/ssm-iam-module"
 }

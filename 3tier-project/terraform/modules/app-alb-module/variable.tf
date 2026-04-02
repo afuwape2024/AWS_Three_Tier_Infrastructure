@@ -1,12 +1,14 @@
-variable "vpc_id" {
-	type = string
+variable "load_balancer_security_group" {}
+
+variable "new_vpc" {
+  type = string
 }
 
-variable "web_subnet_ids" {
+variable "app_subnet_ids" {
   type = list(string)
 }
 
-variable "web_target_group" {
+variable "app_target_group" {
   type    = string
   default = "web-target-group"
 }

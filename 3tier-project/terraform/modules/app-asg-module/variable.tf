@@ -6,6 +6,8 @@ variable "web_template" {
   default = "app-launch-template"
 }
 
+variable "system_manager_instance_profile" {}
+
 variable "image_id" {
   type = string
   description = "the image was selected from us-east-2 region"

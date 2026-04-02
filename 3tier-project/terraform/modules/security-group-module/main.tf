@@ -50,7 +50,7 @@ resource "aws_security_group" "app_security_group" {
     from_port       = 8080
     to_port         = 8080
     protocol        = "tcp"
-    security_groups = [aws_security_group.web-security_group.id]
+    security_groups = [var.load_balancer_security_group]
   }
 
   # SSH only from Web security group

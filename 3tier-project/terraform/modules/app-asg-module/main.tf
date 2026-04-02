@@ -14,6 +14,10 @@ resource "aws_launch_template" "web_template" {
     availability_zone = "us-east-2a"
   }
 
+  iam_instance_profile {
+    name = var.system_manager_instance_profile
+  }
+
   user_data = filebase64("${path.module}/../../../scripts/user-data.sh")
 
   tag_specifications {
