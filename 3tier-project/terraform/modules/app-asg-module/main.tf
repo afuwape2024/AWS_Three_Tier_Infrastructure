@@ -14,7 +14,7 @@ resource "aws_launch_template" "web_template" {
     availability_zone = "us-east-2a"
   }
 
-  user_data = filebase64("${path.module}/user-data.sh")
+  user_data = filebase64("${path.module}/../../../scripts/user-data.sh")
 
   tag_specifications {
     resource_type = "instance"

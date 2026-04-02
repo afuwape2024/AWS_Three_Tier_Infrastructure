@@ -9,8 +9,8 @@ terraform {
   }
 
   backend "s3" {
-    bucket         = "oluwagbenro.afuwape.realproject"
-    key            = "3tier/dev/terraform.tfstate"
+    bucket         = "theresiaweb.com"
+    key            = "three-tier/dev/terraform.tfstate"
     region         = "us-east-2"
     dynamodb_table = "terraform-state-lock"
     encrypt        = true

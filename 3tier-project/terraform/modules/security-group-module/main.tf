@@ -75,22 +75,15 @@ resource "aws_security_group" "app_security_group" {
   }
 }
 
+
+#please note the below security group also help Bastion host instance to connect from web subnet to connect to database
+
 resource "aws_security_group" "database_security_group" {
   name        = "database-sg"
-  description = "Allow MySQL only from App SG"
+  description = "RDS security group"
   vpc_id      = var.vpc_id
 
-  ingress {
-    description     = "MySQL from App SG"
-    from_port       = 3306
-    to_port         = 3306
-    protocol        = "tcp"
-    security_groups = [aws_security_group.app_security_group.id]
-  }
-
-  # For RDS, egress can remain open or be restricted
   egress {
-    description = "Allow outbound responses"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
@@ -100,4 +93,22 @@ resource "aws_security_group" "database_security_group" {
   tags = {
     Name = "database_security_group"
   }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "db_from_app" {
+  security_group_id            = aws_security_group.database_security_group.id
+  referenced_security_group_id = aws_security_group.app_security_group.id
+  from_port                    = 3306
+  to_port                      = 3306
+  ip_protocol                  = "tcp"
+  description                  = "MySQL from app SG"
+}
+
+resource "aws_vpc_security_group_ingress_rule" "db_from_web" {
+  security_group_id            = aws_security_group.database_security_group.id
+  referenced_security_group_id = aws_security_group.web-security_group.id
+  from_port                    = 3306
+  to_port                      = 3306
+  ip_protocol                  = "tcp"
+  description                  = "MySQL from web SG for admin/testing"
 }
