@@ -1,0 +1,135 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_REGION = 'us-east-2'
+        ENV_NAME   = "${params.ENVIRONMENT}"
+        TF_DIR     = "realproject/3tier/env/${params.ENVIRONMENT}"
+    }
+
+    parameters {
+        choice(
+            name: 'ENVIRONMENT',
+            choices: ['dev', 'qa', 'prod'],
+            description: 'Select the Terraform environment'
+        )
+
+        choice(
+            name: 'ACTION',
+            choices: ['plan', 'apply', 'destroy'],
+            description: 'Select the Terraform action'
+        )
+    }
+
+    options {
+        timestamps()
+        disableConcurrentBuilds()
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Checking out source code...'
+                checkout scm
+            }
+        }
+
+        stage('Tools Check') {
+            steps {
+                sh '''
+                    set -e
+                    terraform version
+                    aws --version
+                '''
+            }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                dir("${TF_DIR}") {
+                    sh '''
+                        set -e
+                        terraform init
+                    '''
+                }
+            }
+        }
+
+        stage('Terraform Validate') {
+            steps {
+                dir("${TF_DIR}") {
+                    sh '''
+                        set -e
+                        terraform validate
+                    '''
+                }
+            }
+        }
+
+        stage('Terraform Plan') {
+            when {
+                anyOf {
+                    expression { params.ACTION == 'plan' }
+                    expression { params.ACTION == 'apply' }
+                }
+            }
+            steps {
+                dir("${TF_DIR}") {
+                    sh '''
+                        set -e
+                        terraform plan -out=tfplan
+                    '''
+                }
+            }
+        }
+
+        stage('Approval') {
+            when {
+                expression { params.ACTION == 'apply' || params.ACTION == 'destroy' }
+            }
+            steps {
+                input message: "Approve ${params.ACTION.toUpperCase()} for ${params.ENVIRONMENT}?", ok: 'Approve'
+            }
+        }
+
+        stage('Terraform Apply') {
+            when {
+                expression { params.ACTION == 'apply' }
+            }
+            steps {
+                dir("${TF_DIR}") {
+                    sh '''
+                        set -e
+                        terraform apply -auto-approve tfplan
+                    '''
+                }
+            }
+        }
+
+        stage('Terraform Destroy') {
+            when {
+                expression { params.ACTION == 'destroy' }
+            }
+            steps {
+                dir("${TF_DIR}") {
+                    sh '''
+                        set -e
+                        terraform destroy -auto-approve
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Pipeline completed successfully."
+        }
+        failure {
+            echo "Pipeline failed. Review console output for details."
+        }
+        always {
+            cleanWs()
+        }
+    }
+}
