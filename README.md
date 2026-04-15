@@ -1,7 +1,7 @@
 
 # 3-Tier AWS Infrastructure
 
-## Architecture Overview (From Terraform State)
+## Architecture Overview 
 
 This overview is based on live state from `realproject/3tier/env/dev` using `terraform state list` and `terraform state show`.
 
